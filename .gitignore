@@ -111,3 +111,6 @@ venv.bak/
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary files
+tmp/
