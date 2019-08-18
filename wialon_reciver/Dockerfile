@@ -16,8 +16,8 @@ RUN apk --update add python py-pip openssl ca-certificates py-openssl wget
 RUN apk --update add --virtual build-dependencies g++ gcc libxslt-dev libffi-dev openssl-dev python-dev py-pip build-base \
   && pip install --upgrade pip \
   && pip install -r requirements.txt \
-  && pip install gunicorn pymysql
-#  && apk del build-dependencies
+  && apk del build-dependencies
+#  && pip install gunicorn pymysql
 #RUN apk add --update py-pip gcc python3 python-dev python3-dev g++ make
 #RUN venv/bin/pip install -r requirements.txt
 #RUN venv/bin/pip install gunicorn
