@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import binascii
 import struct
 from datetime import datetime
@@ -24,27 +22,26 @@ def parse_packet(packet):
     # parsed message
     message = {
         'uid': 0,
-        'time': 0,
-        'flags': 0,
         'params': {},
-        # 'blocks': []
     }
 
     # parse packet info
-    controller_id_size = packet.find(b'\x00')
-    (message['uid'], message['time'], message['flags']) = parse('> %ds x i i' % (controller_id_size), packet)
+    controller_id_size = packet.find(b'\x00', 4) - 4
+    (message['uid'], time, _) = parse('> %ds x i i' % controller_id_size, packet, 4)
 
-    # message['uid'] = message['uid'].decode('utf-8') if isinstance(message['uid'], bytes) else message['uid']
-    message['datetime'] = datetime.fromtimestamp(message['time']).strftime('%Y-%m-%d %H:%M:%S')
+    message['uid'] = message['uid'].decode('utf-8') if isinstance(message['uid'], bytes) else message['uid']
+    message['datetime'] = datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
 
     # get data block
-    data_blocks = packet[controller_id_size + 1 + 4 + 4:]
+    # 4 bytes of packet size + controller_id_size + 4 bytes of time + 4 bytes of flags + zero byte
+    # Look http://extapi.wialon.com/hw/cfg/WialonRetranslator%201.0_en.pdf for details
+    data_blocks = packet[4 + controller_id_size + 4 + 4 + 1:]
 
     while len(data_blocks):
         # name offset in data block
         offset = 2 + 4 + 1 + 1
         name_size = data_blocks.find(b'\x00', offset) - offset
-        (block_type, block_length, visible, data_type, name) = parse('> h i b b %ds' % (name_size), data_blocks)
+        (block_type, block_length, visible, data_type, name) = parse('> h i b b %ds' % name_size, data_blocks)
 
         name = name.decode('utf-8') if isinstance(name, bytes) else name
 
@@ -81,9 +78,6 @@ def parse_packet(packet):
 
         # add param to message
         message['params'][name] = v
-
-        # data blocks parse information
-        # message['blocks'].append(block)
 
         # delete parsed info
         data_blocks = data_blocks[block_length + 6:]
