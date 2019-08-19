@@ -5,21 +5,21 @@ import struct
 
 
 def parse(fmt, binary, offset=0):
-    '''
+    """
     Unpack the string
 
     fmt      @see https://docs.python.org/2/library/struct.html#format-strings
     value    value to be formated
     offset   offset in bytes from begining
-    '''
+    """
     parsed = struct.unpack_from(fmt, binary, offset)
     return parsed[0] if len(parsed) == 1 else parsed
 
 
 def parsePacket(packet):
-    '''
+    """
     Parse Wialon Retranslator v1.0 packet w/o first 4 bytes (packet size)
-    '''
+    """
 
     # parsed message
     msg = {
@@ -44,16 +44,10 @@ def parsePacket(packet):
         (block_type, block_length, visible, data_type, name) = parse('> h i b b %ds' % (name_size), data_blocks)
 
         # constuct block info
-        block = {
-            'type': block_type,
-            'length': block_length,
-            'visibility': visible,
-            'data_type': data_type,
-            'name': name
-        }
+        block = {'type': block_type, 'length': block_length, 'visibility': visible, 'data_type': data_type,
+                 'name': name, 'data_block': data_blocks[offset + name_size + 1:block_length * 1 + 6]}
 
         # get block data
-        block['data_block'] = data_blocks[offset + name_size + 1:block_length * 1 + 6]
 
         v = ''
         if data_type == 1:
@@ -86,6 +80,7 @@ def parsePacket(packet):
         data_blocks = data_blocks[block_length + 6:]
 
     return msg
+
 
 if __name__ == '__main__':
     # test data
