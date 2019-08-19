@@ -2,7 +2,7 @@
 
 import binascii
 import struct
-
+from datetime import datetime
 
 def parse(fmt, binary, offset=0):
     """
@@ -23,16 +23,17 @@ def parsePacket(packet):
 
     # parsed message
     msg = {
-        'id': 0,
-        'time': 0,
-        'flags': 0,
+        'uid': 0,
+        'time': '',
+        # 'flags': 0,
         'params': {},
-        'blocks': []
+        # 'blocks': []
     }
 
     # parse packet info
     controller_id_size = packet.find('\x00')
-    (msg['id'], msg['time'], msg['flags']) = parse('> %ds x i i' % (controller_id_size), packet)
+    (msg['uid'], time, flags) = parse('> %ds x i i' % (controller_id_size), packet)
+    msg['time'] = datetime.fromtimestamp(int(time)).strftime("%d-%m-%Y %H:%M:%S")
 
     # get data block
     data_blocks = packet[controller_id_size + 1 + 4 + 4:]
@@ -50,6 +51,7 @@ def parsePacket(packet):
         # get block data
 
         v = ''
+        # todo сделать определение что разбирать на основе flags http://extapi.wialon.com/hw/cfg/WialonRetranslator%201.0.pdf
         if data_type == 1:
             # text
             # TODO
@@ -58,8 +60,8 @@ def parsePacket(packet):
             # binary
             if name == 'posinfo':
                 v = {'lon': 0, 'lat': 0, 'h': 0, 's': 0, 'c': 0, 'sc': 0}
-                (v['lon'], v['lat'], v['h']) = parse('d d d', block['data_block'])
-                (v['s'], v['c'], v['sc']) = parse('> h h b', block['data_block'], 24)
+                (v['longitude'], v['latitude'], v['altitude']) = parse('d d d', block['data_block'])
+                (v['speed'], v['course'], v['satellites']) = parse('> h h b', block['data_block'], 24)
         elif data_type == 3:
             # integer
             v = parse('> i', block['data_block'])
@@ -74,7 +76,7 @@ def parsePacket(packet):
         msg['params'][name] = v
 
         # data blocks parse information
-        msg['blocks'].append(block)
+        # msg['blocks'].append(block)
 
         # delete parsed info
         data_blocks = data_blocks[block_length + 6:]

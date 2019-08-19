@@ -6,3 +6,5 @@ pytz==2018.5
 urllib3==1.23
 redis==2.10.6
 requests==2.19.1
+logging=4.9.6
+simple-websocket-server=0.4.0
