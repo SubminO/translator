@@ -87,6 +87,7 @@ def on_message(messages, client):
             tracks['tracks'].append(track)
 
     tracks_json = json.dumps(tracks)
+    print(tracks_json)
     if client:
         client.send(tracks_json)
     # TODO: Send to unix and web socket
