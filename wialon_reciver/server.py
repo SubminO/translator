@@ -92,7 +92,7 @@ def on_message(messages, client):
     # TODO: Send to unix and web socket
 
 
-CONNECTION = ('0.0.0.0', 724)
+CONNECTION = ('0.0.0.0', 20163)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

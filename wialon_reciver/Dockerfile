@@ -22,7 +22,7 @@ RUN apk --update add --virtual build-dependencies g++ gcc libxslt-dev libffi-dev
 #RUN venv/bin/pip install -r requirements.txt
 #RUN venv/bin/pip install gunicorn
 
-#COPY app app
+COPY ./* ./
 #COPY migrations migrations
 #COPY oriportal.py config.py boot.sh ./
 #COPY boot.sh ./
