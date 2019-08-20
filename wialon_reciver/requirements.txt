@@ -1,2 +1,2 @@
 logging==4.9.6
-simple-websocket-server==0.4.0
+websocket-server==0.4
