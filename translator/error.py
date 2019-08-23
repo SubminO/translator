@@ -14,4 +14,9 @@ class ServerClientRegistrationError(ServerRegistrationError):
     pass
 
 
-# class
+class ParserError(Exception):
+    pass
+
+
+class ParserFactoryCreationError(ParserError):
+    pass

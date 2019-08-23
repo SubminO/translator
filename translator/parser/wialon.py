@@ -1,7 +1,8 @@
 from datetime import datetime
 from parser import parse
 
-class Wialon:
+
+class Parser:
     """
     Парсер виалон пакетов. По сути обернутый в класс гист парсера
     https://gist.github.com/ashmigelski/21cdcb369f55444c4f26
