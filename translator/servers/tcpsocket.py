@@ -1,41 +1,44 @@
-import asyncio
 import json
-from typing import Optional
-from error import ServerProtocolError
 from parser import parse
 
 
 class Server:
+    def __init__(self, parser, ws, debug=False):
+        self.parser = parser.parse_packet
+        self.debug = debug
+        self.ws = ws
 
-    def __init__(self, port: int, proto: str, addr: Optional[str] = '127.0.0.1'):
-        if proto not  in self._protocols:
-            raise ServerProtocolError()
+    async def handler(self, reader, writer):
+        queue = bytes()
+        while True:
+            data = await reader.read(4096)
+            if not data:
+                break
 
-        self._proto = {(protocol, port) for protocol, port in proto if protocol in self._protocols }
+            # append to queue
+            queue = queue + data
+            messages = []
 
-    async def serve(self, protocol, srv_port):
-        pass
+            # get first packet size
+            packet_size = parse('<I', queue)
+            while packet_size + 4 <= len(queue):
+                # get packet
+                packet = queue[4:packet_size + 4]
+                messages.append(self.parser(packet))
 
-    async def handler(self, reader, _, ws):
-        data = await reader.read(1024)
-        message = data.decode()
-#
-#     addr = writer.get_extra_info('peername')
-#
-#     print(f"Received {message!r} from {addr!r}")
-#
-#     print(f"Send: {message!r}")
-#     writer.write(data)
-#     await writer.drain()
-#
-#     print("Close the ws")
-#     writer.close()
-#
-# async def main():
-#     servers = await asyncio.start_server(
-#         handle_echo, '127.0.0.1', 8888)
-#
-#     async with servers:
-#         await servers.serve_forever()
-#
-# asyncio.run(main())
+                # remove packet from queue
+                queue = queue[packet_size + 4:]
+                if len(queue) <= 4:
+                    break
+
+                packet_size = parse('<I', queue)
+
+            # on_message(messages, client)
+            tracks_json = json.dumps(messages)
+
+            if self.debug:
+                print(f"Wialon package {data.decode()} parsed to {tracks_json}")
+
+            await self.ws.send(tracks_json)
+
+            writer.write(b"\x11")

@@ -12,7 +12,7 @@ class Parser:
         '''
         Parse Wialon Retranslator v1.0 packet w/o first 4 bytes (packet size)
         '''
-        # parsed message
+        # parsed package
         message = {
             'params': {},
         }
@@ -26,20 +26,20 @@ class Parser:
         message['uid'] = uid.decode('utf-8') if isinstance(uid, bytes) else uid
         message['datetime'] = datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
 
-        # get data block
+        # get datas block
         # controller_id_size + 4 bytes of time + 4 bytes of flags + zero byte
         # Look http://extapi.wialon.com/hw/cfg/WialonRetranslator%201.0_en.pdf for details
         data_blocks = packet[controller_id_size + 1 + 4 + 4:]
 
         while len(data_blocks):
-            # name offset in data block
+            # name offset in datas block
             offset = 2 + 4 + 1 + 1
             name_size = data_blocks.find(b'\x00', offset) - offset
             (block_type, block_length, visible, data_type, name) = parse('> h i b b %ds' % name_size, data_blocks)
 
             name = name.decode('utf-8') if isinstance(name, bytes) else name
 
-            # constuct data block
+            # constuct datas block
             data_block = data_blocks[offset + name_size + 1:block_length * 1 + 6]
 
             value = None
@@ -62,7 +62,7 @@ class Parser:
                 # long
                 value = parse('> q', data_block)
 
-            # add param to message
+            # add param to package
             message['params'][name] = value
 
             # delete parsed info

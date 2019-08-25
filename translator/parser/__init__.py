@@ -1,13 +1,17 @@
 import struct
 import importlib
 
+import error
+
 
 def parser_factory(proto):
+    """
+    Search parser module in parsers package directory and return it instance
+    """
     try:
         return importlib.import_module(f"parser.{proto}").Parser()
     except ModuleNotFoundError as e:
-        raise ParserFactoryCreationError(e)
-
+        raise error.ParserFactoryCreationError(e)
 
 
 def parse(fmt, binary, offset=0):
