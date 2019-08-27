@@ -11,19 +11,18 @@ class Parser:
         '''
         Parse Wialon Retranslator v1.0 packet w/o first 4 bytes (packet size)
         '''
-        # parsed message
-        message = {
-            'params': {},
-        }
+        # parsed message with undefined content
+        message = {}
 
         # parse packet info
         # пропускаем первых 4 байта (там размер пакета) и вычитаем эти 4 байта что бы получить размер
         controller_id_size = packet.find(b'\x00')
         # читаем данные учитывая длину размера пакета (4 байта)
-        (uid, time, _) = parse('> %ds x i i' % controller_id_size, packet)
+        # flags - зарезервировано для расширения парсера в будущем
+        (uid, message['time'], flags) = parse('> %ds x i i' % controller_id_size, packet)
 
         message['uid'] = uid.decode('utf-8') if isinstance(uid, bytes) else uid
-        message['datetime'] = datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
+        message['datetime'] = datetime.fromtimestamp(message['time']).strftime('%Y-%m-%d %H:%M:%S')
 
         # get data block
         # controller_id_size + 4 bytes of time + 4 bytes of flags + zero byte
@@ -62,7 +61,7 @@ class Parser:
                 value = parse('> q', data_block)
 
             # add param to message
-            message['params'][name] = value
+            message[name] = value
 
             # delete parsed info
             data_blocks = data_blocks[block_length + 6:]
