@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ..parser import parse
+from parser import parse
 
 
 class Parser:

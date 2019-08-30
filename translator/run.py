@@ -4,9 +4,9 @@ import argparse
 import asyncio
 import websockets
 
-from .server import websocket, tcpsocket
-from .parser import parser_factory
-from .errors import ParserFactoryCreationError
+from server import websocket, tcpsocket
+from parser import parser_factory
+from errors import ParserFactoryCreationError
 
 
 if __name__ == "__main__":
