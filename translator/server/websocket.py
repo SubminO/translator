@@ -5,7 +5,7 @@ from websockets.server import WebSocketServerProtocol
 
 class Server:
     """
-    Websocket servers handler
+    Websocket server handler
     """
     def __init__(self, debug=False):
         self.debug = debug

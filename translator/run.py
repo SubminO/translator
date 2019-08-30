@@ -3,9 +3,10 @@
 import argparse
 import asyncio
 import websockets
-from servers import websocket, tcpsocket
-from parser import parser_factory
-from error import ParserFactoryCreationError
+
+from .server import websocket, tcpsocket
+from .parser import parser_factory
+from .errors import ParserFactoryCreationError
 
 
 if __name__ == "__main__":
@@ -26,6 +27,7 @@ if __name__ == "__main__":
     tasks = [
         websockets.serve(wssrv.handler, args.wsaddr, args.wsport)
     ]
+    print(f"Start websocket server on {args.wsaddr}:{args.wsport}")
 
     try:
         for proto, parser, port in [(proto, parser_factory(proto), port) for proto, port in args.proto]:
