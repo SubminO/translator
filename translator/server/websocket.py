@@ -14,7 +14,7 @@ class Server:
     async def send(self, message: str):
         for client in self.clients:
             if self.debug:
-                print(f"To client {client.remote_address} Send message {message}")
+                print(f"To client {client.remote_address} send message {message}")
 
             await client.send(message)
 
@@ -32,7 +32,9 @@ class Server:
     async def handler(self, websocket: WebSocketServerProtocol, path: str):
         # Register new websocket client connection
         self.clients.add(websocket)
-        print(f"Accept new client connection from {websocket.remote_address}")
+
+        if self.debug:
+            print(f"Accept new client connection from {websocket.remote_address}")
 
         # Iteration terminates when the client disconnects like
         # https://websockets.readthedocs.io/en/stable/intro.html#consumer
@@ -45,5 +47,7 @@ class Server:
                 break
 
         # Unregister websocket client connection on close it
-        print(f"Remote connection closed {websocket.remote_address}")
+        if self.debug:
+            print(f"Remote connection closed {websocket.remote_address}")
+
         self.clients.remove(websocket)
