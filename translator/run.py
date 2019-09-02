@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     args = args_parser.parse_args()
 
-    if args.mode != 'production':
+    if args.mode == 'production':
         debug = False
     else:
         debug = True

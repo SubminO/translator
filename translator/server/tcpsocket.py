@@ -38,7 +38,7 @@ class Server:
             tracks_json = json.dumps(messages)
 
             if self.debug:
-                print(f"Wialon package {data.decode()} parsed to {tracks_json}")
+                print(f"Wialon package parsed to {tracks_json}")
 
             await self.ws.send(tracks_json)
 
