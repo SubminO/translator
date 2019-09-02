@@ -16,9 +16,7 @@ class Parser:
         message = {}
 
         # parse packet info
-        # пропускаем первых 4 байта (там размер пакета) и вычитаем эти 4 байта что бы получить размер
         controller_id_size = packet.find(b'\x00')
-        # читаем данные учитывая длину размера пакета (4 байта)
         # flags - зарезервировано для расширения парсера в будущем
         (uid, message['time'], flags) = parse('> %ds x i i' % controller_id_size, packet)
 
@@ -44,7 +42,7 @@ class Parser:
             value = None
             if data_type == 1:
                 # text
-                value = parse('%ds' % block_length, data_block).decode('utf-8')
+                value = data_block[:data_block.find(b'\x00')].decode('utf-8')
             elif data_type == 2:
                 # binary
                 if name == 'posinfo':
