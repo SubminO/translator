@@ -1,7 +1,8 @@
 import json
+import asyncio
 from json.decoder import JSONDecodeError
 from websockets.server import WebSocketServerProtocol
-
+from websockets.exceptions import ConnectionClosedError
 
 class Server:
     """
@@ -12,42 +13,50 @@ class Server:
         self.clients = set()
 
     async def send(self, message: str):
-        for client in self.clients:
+        if len(self.clients):
             if self.debug:
-                print(f"To client {client.remote_address} send message {message}")
+                print(f"Send message '{message}' to registered clients")
 
-            await client.send(message)
+            await asyncio.wait([client.send(message) for client in self.clients])
 
-    async def get_status(self, message: str):
-        data = {}
+    def get_status(self, message: str):
+        status = None
 
         try:
-            data = json.loads(message)
+            status = json.loads(message)['status']
         except JSONDecodeError:
-            if self.debug:
-                print("Error on getting status")
+            print("Error on parse message")
+        except (TypeError, KeyError):
+            print("Error on get status")
 
-        return data.get('status')
+        return status
 
     async def handler(self, websocket: WebSocketServerProtocol, path: str):
         # Register new websocket client connection
         self.clients.add(websocket)
 
-        if self.debug:
-            print(f"Accept new client connection from {websocket.remote_address}")
-
-        # Iteration terminates when the client disconnects like
-        # https://websockets.readthedocs.io/en/stable/intro.html#consumer
-        async for message in websocket:
+        try:
             if self.debug:
-                print(f"Accept from {websocket.remote_address} message {message}")
+                print(f"Accept new client connection from {websocket.remote_address}")
 
-            status = await self.get_status(message)
-            if status == 'closed':
-                break
+            # Iteration terminates when the client disconnects like
+            # https://websockets.readthedocs.io/en/stable/intro.html#consumer
+            async for message in websocket:
+                if self.debug:
+                    print(f"Accept from {websocket.remote_address} message {message}")
 
-        # Unregister websocket client connection on close it
-        if self.debug:
-            print(f"Remote connection closed {websocket.remote_address}")
+                status = self.get_status(message)
+                if status == 'closed':
+                    websocket.close_code = 1000
+                    websocket.close_reason = "Connection closed client side"
+                    break
+        except ConnectionClosedError as e:
+            if self.debug:
+                print(e)
+        finally:
+            # Unregister websocket client connection on close it
+            if self.debug:
+                print(f"Remote connection closed {websocket.remote_address}")
 
-        self.clients.remove(websocket)
+            self.clients.remove(websocket)
+            await websocket.close()
